@@ -2,7 +2,7 @@ package dc.paris.integration
 
 import org.apache.spark.sql.SparkSession
 
-import java.io.File
+//import java.io.File
 
 
 
@@ -11,8 +11,8 @@ object Main extends App {
     .builder()
     .appName("Data Integration")
     .master("local[*]")
-    .config("fs.s3a.access.key", "feYIrRkftrx645QsECKw") // A renseigner
-    .config("fs.s3a.secret.key", "2RDLb99JSmwd8Zj1JcNPvK6t2LbaQnHSDp1cctRW") // A renseigner
+    .config("fs.s3a.access.key", "Kki2nyH5L1yO4uBBot9I") // A renseigner
+    .config("fs.s3a.secret.key", "xtZDQ3UmiakqioOBbe4IIfdTXW15dWcwyvSBPfKh") // A renseigner
     .config("fs.s3a.endpoint", "http://localhost:9000/")
     .config("fs.s3a.path.style.access", "true")
     .config("fs.s3a.connection.ssl.enable", "false")
@@ -20,4 +20,24 @@ object Main extends App {
     .config("fs.s3a.connection.establish.timeout", "1000")
     .config("fs.s3a.connection.timeout", "5000")
     .getOrCreate()
+
+  // 📥 Lecture depuis Minio (fichier .parquet)
+  val df = spark.read.parquet("s3a://taxidata/yellow_tripdata_2024-10.parquet")
+
+  println("✅ Lecture depuis Minio réussie.")
+  df.printSchema()
+  df.show(5)
+
+  // 💾 Insertion dans PostgreSQL
+  df.write
+    .format("jdbc")
+    .option("url", "jdbc:postgresql://localhost:15432/datalake")
+    .option("dbtable", "yellow_tripdata")
+    .option("user", "postgres")
+    .option("password", "admin")
+    .mode("append") // ou "overwrite" si tu veux remplacer à chaque fois
+    .save()
+
+  println("✅ Données insérées dans PostgreSQL.")
+  spark.stop()
 }
