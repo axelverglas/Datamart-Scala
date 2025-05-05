@@ -31,11 +31,11 @@ object Main extends App {
   // 💾 Insertion dans PostgreSQL
   df.write
     .format("jdbc")
-    .option("url", "jdbc:postgresql://localhost:15432/datalake")
+    .option("url", "jdbc:postgresql://localhost:15432/datawarehouse")
     .option("dbtable", "yellow_tripdata")
     .option("user", "postgres")
     .option("password", "admin")
-    .mode("append") // ou "overwrite" si tu veux remplacer à chaque fois
+    .mode("overwrite") // ou "overwrite" si tu veux remplacer à chaque fois
     .save()
 
   println("✅ Données insérées dans PostgreSQL.")
